@@ -27,7 +27,7 @@ from collections import OrderedDict
 from contextlib import contextmanager
 from functools import partial
 from types import MethodType
-from typing import Any, Callable, Union
+from typing import Any, Callable, Union, Optional
 
 import torch
 import torch.utils.hooks as hooks
@@ -3021,6 +3021,29 @@ class Accelerator:
         except Exception:
             # Dataset had no length or raised an error
             return data
+
+    def collect_epoch_for_metrics(
+    self,
+    step_iter,
+    step_fn,
+    *,
+    cat_dim: int = 0,
+    expected_len: Optional[int] = None,
+    stream_to: Optional[Callable[[torch.Tensor, int], None]] = None,
+):
+    """
+    Convenience wrapper around :func:`accelerate.utils.collect.collect_epoch_for_metrics`.
+    See that function's docstring for full semantics.
+    """
+    from .utils.collect import collect_epoch_for_metrics as _collect
+    return _collect(
+        self,
+        step_iter,
+        step_fn,
+        cat_dim=cat_dim,
+        expected_len=expected_len,
+        stream_to=stream_to,
+    )
 
     def reduce(self, tensor, reduction="sum", scale=1.0):
         """
